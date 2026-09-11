@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { TestimonialsFragment } from './components/TestimonialsFragment';
 
 export function App() {
