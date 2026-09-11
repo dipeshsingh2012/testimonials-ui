@@ -15,9 +15,3 @@ jobs:
     uses: dipeshsingh2012/shared-workflows/.github/workflows/deploy-mfe-gcs.yml@main
     with:
       dest_dir: 'mfes/testimonials-ui'
-      bucket: 'mycommerce'
-      node_version: '20'
-      build_command: 'npm run build'
-      dist_dir: 'dist'
-    secrets:
-      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
