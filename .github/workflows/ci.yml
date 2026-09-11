@@ -1,0 +1,14 @@
+name: CI Verification
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Call Reusable CI
+    uses: dipeshsingh2012/shared-workflows/.github/workflows/mfe-ci.yml@main
+    with:
+      run_typecheck: true
+      build_command: 'npm run build'

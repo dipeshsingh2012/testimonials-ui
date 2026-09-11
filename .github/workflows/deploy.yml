@@ -19,84 +19,13 @@ on:
 
 jobs:
   deploy:
-    name: Build & Upload to GCS
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
-
-      - name: Build MFE Production Bundle
-        run: npm run build
-
-      - name: Verify GCP Authentication Secrets
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-          WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-        run: |
-          if [ -z "$GCP_SA_KEY" ] && [ -z "$WIF_PROVIDER" ]; then
-            echo "::error::No GCP credentials configured! Please add either 'GCP_SA_KEY' (Service Account JSON) or 'GCP_WORKLOAD_IDENTITY_PROVIDER' under Repository Settings > Secrets and variables > Actions."
-            exit 1
-          fi
-          echo "GCP credentials detected."
-
-      - name: Authenticate to Google Cloud (Service Account Key)
-        if: ${{ secrets.GCP_SA_KEY != '' }}
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Authenticate to Google Cloud (Workload Identity)
-        if: ${{ secrets.GCP_SA_KEY == '' && secrets.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Deploy to Cloud Storage
-        env:
-          TARGET_BUCKET: ${{ inputs.bucket || secrets.GCS_BUCKET_NAME || 'mycommerce' }}
-          TARGET_DIR: ${{ inputs.dest_dir || 'mfes/testimonials-ui' }}
-        run: |
-          DEST="gs://${TARGET_BUCKET}/${TARGET_DIR}"
-          echo "Deploying dist/ to ${DEST}..."
-          
-          # 1. Sync all immutable static assets with long cache headers
-          gcloud storage rsync dist/ "${DEST}/" \
-            --recursive \
-            --delete-unmatched-destination-objects
-
-          # 2. Set strict no-cache headers for remoteEntry.js so consumers always load the newest micro-frontend version
-          if [ -f "dist/assets/remoteEntry.js" ]; then
-            echo "Applying no-cache header to remoteEntry.js..."
-            gcloud storage objects update "${DEST}/assets/remoteEntry.js" \
-              --cache-control="no-cache, no-store, must-revalidate"
-          fi
-
-          # 3. Set standard cache header for index.html
-          if [ -f "dist/index.html" ]; then
-            gcloud storage objects update "${DEST}/index.html" \
-              --cache-control="no-cache, no-store, must-revalidate"
-          fi
-
-          echo "Deployment completed successfully!"
-          echo "Remote Entry URL: https://storage.googleapis.com/${TARGET_BUCKET}/${TARGET_DIR}/assets/remoteEntry.js"
+    name: Call Reusable GCS Deployment
+    uses: dipeshsingh2012/shared-workflows/.github/workflows/deploy-mfe-gcs.yml@main
+    with:
+      dest_dir: ${{ inputs.dest_dir || 'mfes/testimonials-ui' }}
+      bucket: ${{ inputs.bucket || 'mycommerce' }}
+      node_version: '20'
+      build_command: 'npm run build'
+      dist_dir: 'dist'
+    secrets:
+      gcp_sa_key: ${{ secrets.GCP_SA_KEY }}
