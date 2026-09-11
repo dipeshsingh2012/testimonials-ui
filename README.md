@@ -46,16 +46,12 @@ This repository includes a production GitHub Actions workflow at [`.github/workf
 4. Syncs `dist/` to `gs://mycommerce/mfes/testimonials-ui/`.
 5. Enforces `no-cache` headers on `remoteEntry.js` and `index.html` while preserving 1-year immutable caching on content-hashed chunks.
 
-### Required GitHub Repository Secrets
+### Keyless Deployment via Workload Identity Federation
 
-Under **Settings > Secrets and variables > Actions**, configure:
+Deployments use the centralized [`shared-workflows`](https://github.com/dipeshsingh2012/shared-workflows) repository and authenticate via **Google Cloud Workload Identity Federation**.
 
-| Secret Name | Description | Example / Note |
-| :--- | :--- | :--- |
-| `GCP_SA_KEY` | Service Account JSON key with `roles/storage.objectAdmin` permission on the target GCS bucket. | `{"type": "service_account", ...}` |
-| `GCS_BUCKET_NAME` | *(Optional)* Target GCS bucket name. Defaults to `mycommerce`. | `mycommerce` |
-| `GCP_WORKLOAD_IDENTITY_PROVIDER` | *(Optional)* If using Workload Identity Federation instead of a service account key. | `projects/.../providers/...` |
-| `GCP_SERVICE_ACCOUNT` | *(Optional)* Service account email for Workload Identity. | `sa-deployer@project.iam.gserviceaccount.com` |
+> [!NOTE]
+> **Zero Secrets Required**: GitHub Actions automatically mints short-lived OIDC tokens exchanged with Google STS. No secrets need to be configured under repository settings.
 
 ---
 
@@ -65,3 +61,4 @@ Under **Settings > Secrets and variables > Actions**, configure:
 * **Bundler & MFE:** Vite 5 / `@originjs/vite-plugin-federation`
 * **Styling:** Tailwind CSS
 * **Icons:** Lucide React
+
