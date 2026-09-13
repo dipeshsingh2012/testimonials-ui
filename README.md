@@ -8,7 +8,7 @@
 
 ## 🏗️ Architecture & Exposed Modules
 
-Remote Entry: [`http://localhost:5181/assets/remoteEntry.js`](http://localhost:5181/assets/remoteEntry.js)  
+Remote Entry: `/assets/remoteEntry.js` (Port 5181)  
 Production GCS Entry: [`https://storage.googleapis.com/mycommerce/mfes/testimonials-ui/assets/remoteEntry.js`](https://storage.googleapis.com/mycommerce/mfes/testimonials-ui/assets/remoteEntry.js)
 
 | Module | Component | Description |
